@@ -12,6 +12,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import programmingtheiot.common.ConfigConst;
 import programmingtheiot.common.ConfigUtil;
@@ -25,8 +27,12 @@ import programmingtheiot.data.SystemPerformanceData;
  */
 public class SystemPerformanceManager
 {
-	// private var's
+	// static
+    // Comando: Logger
+    // Qué hace: Crea el grabador de bitácora para esta clase.
+    private static final Logger _Logger = Logger.getLogger(SystemPerformanceManager.class.getName());
 	
+	private int pollRate = ConfigConst.DEFAULT_POLL_CYCLES;
 	
 	// constructors
 	
@@ -36,6 +42,12 @@ public class SystemPerformanceManager
 	 */
 	public SystemPerformanceManager()
 	{
+		this.pollRate =
+		ConfigUtil.getInstance().getInteger(ConfigConst.GATEWAY_DEVICE, ConfigConst.POLL_CYCLES_KEY, ConfigConst.DEFAULT_POLL_CYCLES);
+	
+	if (this.pollRate <= 0) {
+		this.pollRate = ConfigConst.DEFAULT_POLL_CYCLES;
+	}
 	}
 	
 	
@@ -48,13 +60,19 @@ public class SystemPerformanceManager
 	public void setDataMessageListener(IDataMessageListener listener)
 	{
 	}
-	
-	public void startManager()
+
+	public boolean startManager()
 	{
+		_Logger.info("SystemPerformanceManager is starting...");
+		
+		return true;
 	}
-	
-	public void stopManager()
+
+	public boolean stopManager()
 	{
+		_Logger.info("SystemPerformanceManager is stopped.");
+	
+		return true;
 	}
 	
 }
