@@ -33,6 +33,12 @@ public class SystemPerformanceManager
     private static final Logger _Logger = Logger.getLogger(SystemPerformanceManager.class.getName());
 	
 	private int pollRate = ConfigConst.DEFAULT_POLL_CYCLES;
+	private ScheduledExecutorService schedExecSvc = null;
+	private SystemCpuUtilTask sysCpuUtilTask = null;
+	private SystemMemUtilTask sysMemUtilTask = null;
+
+	private Runnable taskRunner = null;
+	private boolean isStarted = false;
 	
 	// constructors
 	
@@ -43,11 +49,20 @@ public class SystemPerformanceManager
 	public SystemPerformanceManager()
 	{
 		this.pollRate =
-		ConfigUtil.getInstance().getInteger(ConfigConst.GATEWAY_DEVICE, ConfigConst.POLL_CYCLES_KEY, ConfigConst.DEFAULT_POLL_CYCLES);
+			ConfigUtil.getInstance().getInteger(
+				ConfigConst.GATEWAY_DEVICE, ConfigConst.POLL_CYCLES_KEY, ConfigConst.DEFAULT_POLL_CYCLES);
 	
-	if (this.pollRate <= 0) {
-		this.pollRate = ConfigConst.DEFAULT_POLL_CYCLES;
-	}
+		if (this.pollRate <= 0) {
+			this.pollRate = ConfigConst.DEFAULT_POLL_CYCLES;
+		}
+	
+		this.schedExecSvc   = Executors.newScheduledThreadPool(1);
+		this.sysCpuUtilTask = new SystemCpuUtilTask();
+		this.sysMemUtilTask = new SystemMemUtilTask();
+	
+		this.taskRunner = () -> {
+			this.handleTelemetry();
+		};
 	}
 	
 	
@@ -55,6 +70,11 @@ public class SystemPerformanceManager
 	
 	public void handleTelemetry()
 	{
+		float cpuUtil = this.sysCpuUtilTask.getTelemetryValue();
+		float memUtil = this.sysMemUtilTask.getTelemetryValue();
+	
+		// NOTE: you may need to change the logging level to 'info' to see the message
+		_Logger.fine("CPU utilization: " + cpuUtil + ", Mem utilization: " + memUtil);
 	}
 	
 	public void setDataMessageListener(IDataMessageListener listener)
@@ -63,16 +83,29 @@ public class SystemPerformanceManager
 
 	public boolean startManager()
 	{
-		_Logger.info("SystemPerformanceManager is starting...");
+		if (! this.isStarted) {
+			_Logger.info("SystemPerformanceManager is starting...");
 		
-		return true;
+			ScheduledFuture<?> futureTask =
+				this.schedExecSvc.scheduleAtFixedRate(this.taskRunner, 1L, this.pollRate, TimeUnit.SECONDS);
+		
+			this.isStarted = true;
+		} else {
+			_Logger.info("SystemPerformanceManager is already started.");
+		}
+	
+		return this.isStarted;
 	}
 
 	public boolean stopManager()
 	{
+		this.schedExecSvc.shutdown();
+		this.isStarted = false;
+	
 		_Logger.info("SystemPerformanceManager is stopped.");
 	
 		return true;
 	}
 	
 }
+

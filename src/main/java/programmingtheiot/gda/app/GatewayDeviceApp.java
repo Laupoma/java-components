@@ -8,6 +8,7 @@ package programmingtheiot.gda.app;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import programmingtheiot.gda.system.SystemPerformanceManager;
 
 /**
  * Main GDA application.
@@ -22,6 +23,7 @@ public class GatewayDeviceApp
     // CAMBIO 1: Se actualizó a 65000L (65 segundos) según la instrucción.
     public static final long DEFAULT_TEST_RUNTIME = 65000L;
     
+	private SystemPerformanceManager sysPerfMgr = null;
     // constructors
     
     /**
@@ -34,6 +36,8 @@ public class GatewayDeviceApp
         
         _Logger.info("Initializing GDA...");
         
+		this.sysPerfMgr = new SystemPerformanceManager();
+
         parseArgs(args);
     }
     
@@ -71,9 +75,13 @@ public class GatewayDeviceApp
         _Logger.info("Starting GDA...");
         
         try {
-            // TODO: Your code here
-            
-            _Logger.info("GDA started successfully.");
+            if (this.sysPerfMgr.startManager()) {
+			_Logger.info("GDA started successfully.");
+		} else {
+			_Logger.warning("Failed to start system performance manager!");
+			
+			stopApp(-1);
+		}
         } catch (Exception e) {
             _Logger.log(Level.SEVERE, "Failed to start GDA. Exiting.", e);
             
@@ -86,21 +94,23 @@ public class GatewayDeviceApp
      * * @param code The exit code to pass to {@link System.exit()}
      */
     public void stopApp(int code)
-    {
-        _Logger.info("Stopping GDA...");
-        
-        try {
-            // TODO: Your code here
-        } catch (Exception e) {
-            // CAMBIO 2: Se mantiene el log del error dentro del catch
-            _Logger.log(Level.SEVERE, "Failed to cleanly stop GDA. Exiting.", e);
+	{
+    	_Logger.info("Stopping GDA...");
+    
+    	try {
+        // Solo llamamos al stop, no logueamos éxito aquí todavía
+        if (!this.sysPerfMgr.stopManager()) {
+            _Logger.warning("Failed to stop system performance manager!");
         }
-        
-        // CAMBIO 3: El log informativo ahora está FUERA del try/catch y es lo último antes de salir.
-        _Logger.log(Level.INFO, "GDA stopped successfully with exit code {0}.", code);
-        
-        System.exit(code);
-    }
+    	} catch (Exception e) {
+        _Logger.log(Level.SEVERE, "Failed to cleanly stop GDA. Exiting.", e);
+    	}
+    
+    	// ESTA debe ser la última línea de log, fuera del try/catch
+    	_Logger.log(Level.INFO, "GDA stopped successfully with exit code {0}.", code);
+    
+    	System.exit(code);
+	}
     
     
     // private methods
