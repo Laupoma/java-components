@@ -178,25 +178,25 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended
 	@Override
 	public void connectComplete(boolean reconnect, String serverURI)
 	{
-		_Logger.info("MQTT connection complete. Reconnect: " + reconnect + " | URI: " + serverURI);
+		_Logger.info("MQTT connection successful (is reconnect = " + reconnect + "). Broker: " + serverURI);
 	}
 
 	@Override
 	public void connectionLost(Throwable t)
 	{
-		_Logger.warning("MQTT connection lost: " + t.getMessage());
+		_Logger.log(Level.WARNING, "Lost connection to MQTT broker: " + this.brokerAddr, t);
 	}
 
 	@Override
 	public void deliveryComplete(IMqttDeliveryToken token)
 	{
-		_Logger.info("MQTT message delivery complete. Token: " + token);
+		_Logger.fine("Delivered MQTT message with ID: " + token.getMessageId());
 	}
 
 	@Override
-	public void messageArrived(String topic, MqttMessage msg) throws Exception
+	public void messageArrived(String topic, MqttMessage message) throws Exception
 	{
-		_Logger.info("MQTT message arrived on topic: " + topic + " | Payload: " + new String(msg.getPayload()));
+		_Logger.info("MQTT message arrived on topic: '" + topic + "'");
 	}
 
 	// private methods
