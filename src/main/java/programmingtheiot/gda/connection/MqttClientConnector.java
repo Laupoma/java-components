@@ -138,21 +138,72 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended
 	@Override
 	public boolean publishMessage(ResourceNameEnum topicName, String msg, int qos)
 	{
-		_Logger.info("publishMessage called. Not yet implemented.");
+		if (topicName == null) {
+			_Logger.warning("Resource is null. Unable to publish message: " + this.brokerAddr);
+			return false;
+		}
+
+		if (msg == null || msg.length() == 0) {
+			_Logger.warning("Message is null or empty. Unable to publish message: " + this.brokerAddr);
+			return false;
+		}
+
+		if (qos < 0 || qos > 2) {
+			qos = ConfigConst.DEFAULT_QOS;
+		}
+
+		try {
+			byte[] payload = msg.getBytes();
+			MqttMessage mqttMsg = new MqttMessage(payload);
+			mqttMsg.setQos(qos);
+			this.mqttClient.publish(topicName.getResourceName(), mqttMsg);
+			return true;
+		} catch (Exception e) {
+			_Logger.log(Level.SEVERE, "Failed to publish message to topic: " + topicName, e);
+		}
+
 		return false;
 	}
 
 	@Override
 	public boolean subscribeToTopic(ResourceNameEnum topicName, int qos)
 	{
-		_Logger.info("subscribeToTopic called. Not yet implemented.");
+		if (topicName == null) {
+			_Logger.warning("Resource is null. Unable to subscribe to topic: " + this.brokerAddr);
+			return false;
+		}
+
+		if (qos < 0 || qos > 2) {
+			qos = ConfigConst.DEFAULT_QOS;
+		}
+
+		try {
+			this.mqttClient.subscribe(topicName.getResourceName(), qos);
+			_Logger.info("Successfully subscribed to topic: " + topicName.getResourceName());
+			return true;
+		} catch (Exception e) {
+			_Logger.log(Level.SEVERE, "Failed to subscribe to topic: " + topicName, e);
+		}
+
 		return false;
 	}
 
 	@Override
 	public boolean unsubscribeFromTopic(ResourceNameEnum topicName)
 	{
-		_Logger.info("unsubscribeFromTopic called. Not yet implemented.");
+		if (topicName == null) {
+			_Logger.warning("Resource is null. Unable to unsubscribe from topic: " + this.brokerAddr);
+			return false;
+		}
+
+		try {
+			this.mqttClient.unsubscribe(topicName.getResourceName());
+			_Logger.info("Successfully unsubscribed from topic: " + topicName.getResourceName());
+			return true;
+		} catch (Exception e) {
+			_Logger.log(Level.SEVERE, "Failed to unsubscribe from topic: " + topicName, e);
+		}
+
 		return false;
 	}
 

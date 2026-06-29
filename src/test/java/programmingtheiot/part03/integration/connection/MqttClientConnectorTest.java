@@ -36,7 +36,7 @@ public class MqttClientConnectorTest
 	{
 	}
 
-	@Test
+	//@Test
 	public void testConnectAndDisconnect()
 	{
 		int delay = ConfigUtil.getInstance().getInteger(ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.KEEP_ALIVE_KEY, ConfigConst.DEFAULT_KEEP_ALIVE);
@@ -54,7 +54,7 @@ public class MqttClientConnectorTest
 		assertFalse(this.mqttClient.disconnectClient());
 	}
 
-//	@Test
+	@Test
 	public void testPublishAndSubscribe()
 	{
 		int qos = 0;
