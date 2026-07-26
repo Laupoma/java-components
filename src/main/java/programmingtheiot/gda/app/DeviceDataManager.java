@@ -209,6 +209,14 @@ public class DeviceDataManager implements IDataMessageListener
 		if (this.sysPerfMgr != null) {
 			this.sysPerfMgr.startManager();
 		}
+
+		if (this.enableCoapServer && this.coapServer != null) {
+			if (this.coapServer.startServer()) {
+				_Logger.info("CoAP server started.");
+			} else {
+				_Logger.severe("Failed to start CoAP server. Check log file for details.");
+			}
+		}
 	}
 
 	public void stopManager()
@@ -229,6 +237,14 @@ public class DeviceDataManager implements IDataMessageListener
 				_Logger.info("Successfully disconnected MQTT client from broker.");
 			} else {
 				_Logger.severe("Failed to disconnect MQTT client from broker.");
+			}
+		}
+
+		if (this.enableCoapServer && this.coapServer != null) {
+			if (this.coapServer.stopServer()) {
+				_Logger.info("CoAP server stopped.");
+			} else {
+				_Logger.severe("Failed to stop CoAP server. Check log file for details.");
 			}
 		}
 	}
@@ -255,7 +271,7 @@ public class DeviceDataManager implements IDataMessageListener
 		}
 
 		if (this.enableCoapServer) {
-			// TODO: implement this in Lab Module 8
+			this.coapServer = new CoapServerGateway(this);
 		}
 
 		if (this.enableCloudClient) {
