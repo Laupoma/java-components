@@ -21,6 +21,7 @@ import programmingtheiot.data.SystemStateData;
 
 import programmingtheiot.gda.connection.CloudClientConnector;
 import programmingtheiot.gda.connection.CoapServerGateway;
+import programmingtheiot.gda.connection.CoapClientConnector;
 import programmingtheiot.gda.connection.IPersistenceClient;
 import programmingtheiot.gda.connection.IPubSubClient;
 import programmingtheiot.gda.connection.IRequestResponseClient;
@@ -41,6 +42,7 @@ public class DeviceDataManager implements IDataMessageListener
 
 	private boolean enableMqttClient        = true;
 	private boolean enableCoapServer        = false;
+	private boolean enableCoapClient        = false;
 	private boolean enableCloudClient       = false;
 	private boolean enableSmtpClient        = false;
 	private boolean enablePersistenceClient = false;
@@ -52,6 +54,7 @@ public class DeviceDataManager implements IDataMessageListener
 	private IPersistenceClient    persistenceClient    = null;
 	private IRequestResponseClient smtpClient         = null;
 	private CoapServerGateway     coapServer           = null;
+	private CoapClientConnector   coapClient           = null;
 
 	private SystemPerformanceManager sysPerfMgr = null;
 
@@ -71,6 +74,10 @@ public class DeviceDataManager implements IDataMessageListener
 		this.enableCoapServer =
 			configUtil.getBoolean(
 				ConfigConst.GATEWAY_DEVICE, ConfigConst.ENABLE_COAP_SERVER_KEY);
+		
+		this.enableCoapClient =
+			configUtil.getBoolean(
+				ConfigConst.GATEWAY_DEVICE, ConfigConst.ENABLE_COAP_CLIENT_KEY);
 
 		this.enableCloudClient =
 			configUtil.getBoolean(
@@ -272,6 +279,11 @@ public class DeviceDataManager implements IDataMessageListener
 
 		if (this.enableCoapServer) {
 			this.coapServer = new CoapServerGateway(this);
+		}
+
+		if (this.enableCoapClient) {
+			this.coapClient = new CoapClientConnector();
+			this.coapClient.setDataMessageListener(this);
 		}
 
 		if (this.enableCloudClient) {
