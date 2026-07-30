@@ -23,7 +23,7 @@ public class GatewayDeviceApp
 	private static final Logger _Logger =
 		Logger.getLogger(GatewayDeviceApp.class.getName());
 	
-	public static final long DEFAULT_TEST_RUNTIME = 65000L;
+	public static final long DEFAULT_TEST_RUNTIME = 600000L;
 	
 	// private var's
 	
