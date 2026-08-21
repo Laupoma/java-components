@@ -20,7 +20,7 @@ defaultQoS     = 0
 keepAlive      = 60
 useAsyncClient = True
 enableAuth     = True
-enableCrypt    = True
+enableCrypt    = False
 baseUrl        = 
 baseTopic      = 
 
