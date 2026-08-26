@@ -24,6 +24,7 @@ import programmingtheiot.data.SystemPerformanceData;
 import programmingtheiot.data.SystemStateData;
 
 import programmingtheiot.gda.connection.CloudClientConnector;
+import programmingtheiot.gda.connection.ICloudClient;
 import programmingtheiot.gda.connection.CoapServerGateway;
 import programmingtheiot.gda.connection.CoapClientConnector;
 import programmingtheiot.gda.connection.IPersistenceClient;
@@ -54,7 +55,7 @@ public class DeviceDataManager implements IDataMessageListener
 
 	private IActuatorDataListener actuatorDataListener = null;
 	private IPubSubClient         mqttClient           = null;
-	private IPubSubClient         cloudClient          = null;
+	private ICloudClient          cloudClient          = null;
 	private IPersistenceClient    persistenceClient    = null;
 	private IRequestResponseClient smtpClient         = null;
 	private CoapServerGateway     coapServer           = null;
@@ -218,6 +219,11 @@ public class DeviceDataManager implements IDataMessageListener
 
 			this.handleUpstreamTransmission(resourceName, jsonData, qos);
 
+			// send the SensorData to the cloud (last call - we still have the object here)
+			if (this.cloudClient != null) {
+				this.cloudClient.sendEdgeDataToCloud(resourceName, data);
+			}
+
 			return true;
 		} else {
 			return false;
@@ -232,6 +238,11 @@ public class DeviceDataManager implements IDataMessageListener
 
 			if (data.hasError()) {
 				_Logger.warning("Error flag set for SystemPerformanceData instance.");
+			}
+
+			// send the SystemPerformanceData to the cloud (last call)
+			if (this.cloudClient != null) {
+				this.cloudClient.sendEdgeDataToCloud(resourceName, data);
 			}
 
 			return true;
@@ -266,6 +277,16 @@ public class DeviceDataManager implements IDataMessageListener
 			}
 		}
 
+		// NOTE: connect the cloud client BEFORE starting the SystemPerformanceManager
+		// so no system performance data is generated before the cloud connection is up.
+		if (this.cloudClient != null) {
+			if (this.cloudClient.connectClient()) {
+				_Logger.info("Successfully connected cloud client to CSP.");
+			} else {
+				_Logger.severe("Failed to connect cloud client to CSP.");
+			}
+		}
+
 		if (this.sysPerfMgr != null) {
 			this.sysPerfMgr.startManager();
 		}
@@ -297,6 +318,14 @@ public class DeviceDataManager implements IDataMessageListener
 				_Logger.info("Successfully disconnected MQTT client from broker.");
 			} else {
 				_Logger.severe("Failed to disconnect MQTT client from broker.");
+			}
+		}
+
+		if (this.cloudClient != null) {
+			if (this.cloudClient.disconnectClient()) {
+				_Logger.info("Successfully disconnected cloud client from CSP.");
+			} else {
+				_Logger.severe("Failed to disconnect cloud client from CSP.");
 			}
 		}
 
@@ -340,7 +369,8 @@ public class DeviceDataManager implements IDataMessageListener
 		}
 
 		if (this.enableCloudClient) {
-			// TODO: implement this in Lab Module 10
+			this.cloudClient = new CloudClientConnector();
+			this.cloudClient.setDataMessageListener(this);
 		}
 
 		if (this.enablePersistenceClient) {
