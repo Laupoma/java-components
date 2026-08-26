@@ -81,6 +81,58 @@ public class DataUtil
 		
 		return jsonData;
 	}
+
+	public String actuatorDataToTimeAndValueJson(ActuatorData data)
+	{
+		String jsonData = null;
+		
+		if (data != null) {
+			Gson gson = new Gson();
+			TimeAndValuePayloadData tvData = new TimeAndValuePayloadData(data);
+			jsonData = gson.toJson(tvData);
+		}
+		
+		return jsonData;
+	}
+	
+	public String sensorDataToTimeAndValueJson(SensorData data)
+	{
+		String jsonData = null;
+		
+		if (data != null) {
+			Gson gson = new Gson();
+			TimeAndValuePayloadData tvData = new TimeAndValuePayloadData(data);
+			jsonData = gson.toJson(tvData);
+		}
+		
+		return jsonData;
+	}
+
+	public String actuatorDataToTimeAndValueJson(ActuatorData data)
+	{
+		String jsonData = null;
+		
+		if (data != null) {
+			Gson gson = new Gson();
+			TimeAndValuePayloadData tvData = new TimeAndValuePayloadData(data);
+			jsonData = gson.toJson(tvData);
+		}
+		
+		return jsonData;
+	}
+	
+	public String sensorDataToTimeAndValueJson(SensorData data)
+	{
+		String jsonData = null;
+		
+		if (data != null) {
+			Gson gson = new Gson();
+			TimeAndValuePayloadData tvData = new TimeAndValuePayloadData(data);
+			jsonData = gson.toJson(tvData);
+		}
+		
+		return jsonData;
+	}
 	
 	public String systemPerformanceDataToJson(SystemPerformanceData data)
 	{
