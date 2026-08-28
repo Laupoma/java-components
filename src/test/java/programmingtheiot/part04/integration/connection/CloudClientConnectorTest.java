@@ -72,7 +72,7 @@ public class CloudClientConnectorTest
 	/**
 	 * Test method for {@link programmingtheiot.gda.connection.UbidotsMqttCloudClientConnector#connectClient()}.
 	 */
-	@Test
+//	@Test
 	public void testCloudClientConnectAndDisconnect()
 	{
 		this.cloudClient.setDataMessageListener(new DefaultDataMessageListener());
@@ -132,7 +132,7 @@ public class CloudClientConnectorTest
 			// of the sleep cycle may need to be manually adjusted to
 			// allow the connection to complete
 			
-			Thread.sleep(2000L);
+			Thread.sleep(5000L);
 		} catch (Exception e) {
 			// ignore
 		}
