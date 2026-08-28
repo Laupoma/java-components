@@ -191,13 +191,33 @@ public class DeviceDataManager implements IDataMessageListener
 	@Override
 	public boolean handleIncomingMessage(ResourceNameEnum resourceName, String msg)
 	{
-		if (msg != null) {
-			_Logger.info("Handling incoming generic message: " + msg);
+		if (resourceName != null && msg != null) {
+			try {
+				if (resourceName == ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE) {
+					_Logger.info("Handling incoming ActuatorData message: " + msg);
 
-			return true;
+					// Convert JSON -> ActuatorData -> JSON. The round trip validates
+					// that the payload really is an ActuatorData before sending to the CDA.
+					ActuatorData ad = DataUtil.getInstance().jsonToActuatorData(msg);
+					String jsonData = DataUtil.getInstance().actuatorDataToJson(ad);
+
+					if (this.mqttClient != null) {
+						_Logger.fine("Publishing data to MQTT broker: " + jsonData);
+						return this.mqttClient.publishMessage(resourceName, jsonData, 0);
+					}
+				} else {
+					_Logger.warning("Failed to parse incoming message. Unknown type: " + msg);
+
+					return false;
+				}
+			} catch (Exception e) {
+				_Logger.log(Level.WARNING, "Failed to process incoming message for resource: " + resourceName, e);
+			}
 		} else {
-			return false;
+			_Logger.warning("Incoming message has no data. Ignoring for resource: " + resourceName);
 		}
+
+		return false;
 	}
 
 	@Override
