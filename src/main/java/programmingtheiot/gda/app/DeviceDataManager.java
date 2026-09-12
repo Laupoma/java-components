@@ -302,6 +302,15 @@ public class DeviceDataManager implements IDataMessageListener
 		if (this.cloudClient != null) {
 			if (this.cloudClient.connectClient()) {
 				_Logger.info("Successfully connected cloud client to CSP.");
+
+				// The cloud connection is asynchronous: connectClient() returns before
+				// the TLS/MQTT handshake finishes. Wait briefly so the connection is
+				// confirmed before the SystemPerformanceManager starts publishing.
+				try {
+					Thread.sleep(5000L);
+				} catch (InterruptedException e) {
+					// ignore
+				}
 			} else {
 				_Logger.severe("Failed to connect cloud client to CSP.");
 			}
